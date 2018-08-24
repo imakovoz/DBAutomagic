@@ -2,10 +2,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
   var submit = document.getElementById("submit");
   submit.onclick = function(e) {
     e.preventDefault();
-    var account = "124154600";
-    var tracker = "UA-124154600-4";
-    // var account = document.querySelector("#account").value;
-    // var tracker = document.querySelector("#tracker").value;
+    // var account = "124154600";
+    // var tracker = "UA-124154600-4";
+    var account = document.querySelector("#account").value;
+    var tracker = document.querySelector("#tracker").value;
     var json = JSON.parse(document.querySelector("#json").value);
     var keys = Object.keys(json);
 
