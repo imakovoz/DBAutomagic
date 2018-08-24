@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
     }
     var tracker = document.querySelector("#tracker").value;
     if (tracker === "") {
-      tracker = "UA-124154600-4";
+      tracker = "UA-124154600-7";
     }
     var json = document.querySelector("#json").value;
     if (json === "") {
@@ -107,30 +107,37 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
           keys = keys.map(z => parseInt(z));
           // testing api only
-          for (var i = 0; i < 3; i++) {
-            // for (var i = 0; i < keys.length; i++) {
+          // for (var i = 0; i < keys.length; i++) {
+          for (var i = 0; i < 1; i++) {
             if (indexes.filter(j => j == keys[i]).length > 0) {
+              // if updating
               var k = new XMLHttpRequest();
+              console.log(account);
+              console.log(tracker);
               k.open(
-                "PUT",
-                "https://www.googleapis.com/analytics/v3/management/accounts/" +
-                  account +
-                  "/webproperties/" +
-                  tracker +
-                  "/customDimensions/" +
-                  `ga:dimension${keys[i]}` +
-                  "?alt=json&access_token=" +
-                  token
+                "PATCH",
+                `https://www.googleapis.com/analytics/v3/management/accounts/124154600/webproperties/UA-124154600-4/customDimensions/ga:dimension1?alt=json&access_token=${token}`
               );
               var body = {
-                name: json[keys[i]],
-                index: keys[i],
+                name: "ilya504",
+                index: 1,
                 scope: "SESSION",
                 active: true
               };
-              debugger;
-              k.send(body);
+              console.log(body);
+              // var body = {
+              //   name: json[keys[i]],
+              //   index: keys[i],
+              //   scope: "SESSION",
+              //   active: true
+              // };
+              k.setRequestHeader(
+                "Content-Type",
+                "application/json;charset=UTF-8"
+              );
+              k.send(JSON.stringify(body));
             } else {
+              // if inserting
               var k = new XMLHttpRequest();
               k.open(
                 "POST",
@@ -150,8 +157,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 accountId: account,
                 webPropertyId: tracker
               };
-              debugger;
-              k.send(body);
+              k.send(JSON.stringify(body));
             }
           }
         };
