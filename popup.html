@@ -11,7 +11,16 @@
       display: flex;
       flex-direction: column;
     }
-
+    button, div {
+      display: flex;
+      flex-grow: 1;
+    }
+    button {
+      padding: 5px;
+      justify-content: center;
+      align-items: center;
+      margin: 0 5px;
+    }
     </style>
   </head>
   <body>
@@ -19,7 +28,10 @@
       <input type="text" id="account" placeholder="account">
       <input type="text" id="tracker" placeholder="tracker">
       <textarea id="json" rows="8" cols="80" placeholder="Enter JSON here"></textarea>
-      <button id="submit">Submit</button>
+      <div>
+        <button id="submit">Submit</button>
+        <button id="logout">Logout</button>
+      </div>
     </form>
     <script src="popup.js"></script>
   </body>

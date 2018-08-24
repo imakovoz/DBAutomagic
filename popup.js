@@ -1,3 +1,5 @@
+var gatoken = null;
+
 document.addEventListener("DOMContentLoaded", function(event) {
   var submit = document.getElementById("submit");
   submit.onclick = function(e) {
@@ -5,8 +7,36 @@ document.addEventListener("DOMContentLoaded", function(event) {
     // var account = "124154600";
     // var tracker = "UA-124154600-4";
     var account = document.querySelector("#account").value;
+    if (account === "") {
+      account = "124154600";
+    }
     var tracker = document.querySelector("#tracker").value;
-    var json = JSON.parse(document.querySelector("#json").value);
+    if (tracker === "") {
+      tracker = "UA-124154600-4";
+    }
+    var json = document.querySelector("#json").value;
+    if (json === "") {
+      json = {
+        "1": "demandbase_sid",
+        "2": "company_name",
+        "3": "industry",
+        "4": "sub_industry",
+        "5": "employee_range",
+        "6": "revenue_range",
+        "7": "audience",
+        "8": "audience_segment",
+        "9": "marketing_alias",
+        "10": "city",
+        "11": "state",
+        "12": "country_name",
+        "13": "watch_list_account_type",
+        "14": "watch_list_account_status",
+        "15": "watch_list_campaign_code",
+        "16": "watch_list_account_owner"
+      };
+    } else {
+      json = JSON.parse(json);
+    }
     var keys = Object.keys(json);
 
     // sanitize inputs
@@ -32,10 +62,12 @@ document.addEventListener("DOMContentLoaded", function(event) {
         interactive: true
       },
       function(token) {
+        gatoken = token;
         if (chrome.runtime.lastError) {
           alert(chrome.runtime.lastError.message);
           return;
         }
+
         // request auth token
         var x = new XMLHttpRequest();
         x.open(
@@ -74,11 +106,13 @@ document.addEventListener("DOMContentLoaded", function(event) {
           }
 
           keys = keys.map(z => parseInt(z));
-          for (var i = 0; i < keys.length; i++) {
+          // testing api only
+          for (var i = 0; i < 3; i++) {
+            // for (var i = 0; i < keys.length; i++) {
             if (indexes.filter(j => j == keys[i]).length > 0) {
               var k = new XMLHttpRequest();
               k.open(
-                "PATCH",
+                "PUT",
                 "https://www.googleapis.com/analytics/v3/management/accounts/" +
                   account +
                   "/webproperties/" +
@@ -125,5 +159,21 @@ document.addEventListener("DOMContentLoaded", function(event) {
         x.send();
       }
     );
+  };
+
+  var logout = document.getElementById("logout");
+  logout.onclick = function(e) {
+    e.preventDefault();
+    var options = {
+      interactive: true,
+      url: "https://localhost:44344/Account/Logout"
+    };
+    chrome.identity.launchWebAuthFlow(options, function(redirectUri) {});
+
+    options = {
+      interactive: true,
+      url: "https://accounts.google.com/logout"
+    };
+    chrome.identity.launchWebAuthFlow(options, function(redirectUri) {});
   };
 });
