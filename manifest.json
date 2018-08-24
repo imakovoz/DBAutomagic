@@ -1,0 +1,35 @@
+{
+  "key":
+    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAypDeDGD3sQOZQi/Agrs8FWi53pEmcjJAImEoTTtlF5K2GAhk4vqUoRnf1BDY0zltqOv0dHtR47dHgbSfxuh/38+YfsQ/VzdtruWGXdc8Wa+XEYZVljP05dlECLzjFxAluevsdc52LFtpd1Qvvwm3Xp2HtED/gCPvktbSYJDuX94Jt6xzpKiM3cQXFQ/KxLmzw6VNSieehUKOdpXTyROdSLu14jBu/IYIHlkNzq3U43C71ILca2DFoM2eI4/ImJAWfppRKfTzWBMsJkKriFtH0HB2v3RSRXfXcqcv9bpho6ogl94mkGjfw7E/7w2WcIvMyACqsyXGiTE9tmYMnZAGUwIDAQAB",
+  "name": "Identity test",
+  "version": "1",
+  "manifest_version": 2,
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "permissions": ["activeTab", "identity", "storage", "declarativeContent"],
+  "page_action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "images/16.png",
+      "32": "images/32.png",
+      "48": "images/48.png",
+      "128": "images/128.png"
+    }
+  },
+  "icons": {
+    "16": "images/16.png",
+    "32": "images/32.png",
+    "48": "images/48.png",
+    "128": "images/128.png"
+  },
+  "oauth2": {
+    "client_id":
+      "596830004015-6dfjvgunvd93umirs2kbqrqraclgdc9k.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/analytics",
+      "https://www.googleapis.com/auth/analytics.edit"
+    ]
+  }
+}
