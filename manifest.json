@@ -27,7 +27,6 @@
     "client_id":
       "596830004015-6dfjvgunvd93umirs2kbqrqraclgdc9k.apps.googleusercontent.com",
     "scopes": [
-      "https://www.googleapis.com/auth/userinfo.email",
       "https://www.googleapis.com/auth/analytics",
       "https://www.googleapis.com/auth/analytics.edit"
     ]
