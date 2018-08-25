@@ -168,6 +168,17 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 alert("Done");
               }
             };
+            k.onreadystatechange = function(oEvent) {
+              if (k.readyState === 4) {
+                if (k.status === 200) {
+                  console.log(k.responseText);
+                } else {
+                  alert(JSON.parse(k.responseText)["error"]["message"]);
+                  // debugger;
+                  // alert("Error", k.statusText);
+                }
+              }
+            };
             k.send(JSON.stringify(body));
           };
           cbFunc();
