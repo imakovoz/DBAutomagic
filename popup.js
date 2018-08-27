@@ -1,210 +1,173 @@
-var gatoken = null;
-
-document.addEventListener("DOMContentLoaded", function(event) {
+document.addEventListener("DOMContentLoaded", event => {
   var submit = document.getElementById("submit");
-  submit.onclick = function(e) {
+  submit.onclick = e => {
     e.preventDefault();
-    // var account = "124154600";
-    // var tracker = "UA-124154600-4";
     var account = document.querySelector("#account").value;
     var tracker = document.querySelector("#tracker").value;
     var json = document.querySelector("#json").value;
-
+    var errorArr = [];
     if (account === "") {
-      account = "124154600";
+      errorArr.push("Account field is empty");
     }
     if (tracker === "") {
-      tracker = "UA-124154600-7";
+      errorArr.push("Tracker field is empty");
     }
     if (json === "") {
-      json = {
-        "1": "Ydemandbase_sid",
-        "2": "Ycompany_name",
-        "3": "Yindustry",
-        "4": "Ysub_industry",
-        "5": "Yemployee_range",
-        "6": "Yrevenue_range",
-        "7": "Yaudience",
-        "8": "Yaudience_segment",
-        "9": "Ymarketing_alias",
-        "10": "Ycity",
-        "11": "Ystate",
-        "12": "Ycountry_name",
-        "13": "Ywatch_list_account_type",
-        "14": "Ywatch_list_account_status",
-        "15": "Ywatch_list_campaign_code",
-        "16": "Ywatch_list_account_owner"
-      };
-      // json = {
-      //   "1": "demandbase_sid",
-      //   "2": "company_name",
-      //   "3": "industry",
-      //   "4": "sub_industry",
-      //   "5": "employee_range",
-      //   "6": "revenue_range",
-      //   "7": "audience",
-      //   "8": "audience_segment",
-      //   "9": "marketing_alias",
-      //   "10": "city",
-      //   "11": "state",
-      //   "12": "country_name",
-      //   "13": "watch_list_account_type",
-      //   "14": "watch_list_account_status",
-      //   "15": "watch_list_campaign_code",
-      //   "16": "watch_list_account_owner",
-      // };
+      errorArr.push("JSON field is empty");
     } else {
       json = JSON.parse(json);
     }
-    var keys = Object.keys(json);
-    // sanitize inputs
-    keys.forEach(key => {
-      json[key] = json[key]
-        .split("_")
-        .map(wrd => {
-          if (wrd === "sid") {
-            return "SID";
-          } else if (wrd === "sic") {
-            return "SIC";
-          } else if (wrd === "naics") {
-            return "NAICS";
-          } else {
-            return wrd.charAt(0).toUpperCase() + wrd.slice(1);
+    if (errorArr.length > 0) {
+      alert(errorArr.join("\n"));
+    } else {
+      var keys = Object.keys(json);
+      // sanitize inputs
+      keys.forEach(key => {
+        json[key] = json[key]
+          .split("_")
+          .map(wrd => {
+            if (wrd === "sid") {
+              return "SID";
+            } else if (wrd === "sic") {
+              return "SIC";
+            } else if (wrd === "naics") {
+              return "NAICS";
+            } else {
+              return wrd.charAt(0).toUpperCase() + wrd.slice(1);
+            }
+          })
+          .join(" ");
+      });
+
+      chrome.identity.getAuthToken(
+        {
+          interactive: true
+        },
+        token => {
+          if (chrome.runtime.lastError) {
+            alert(chrome.runtime.lastError.message);
+            return;
           }
-        })
-        .join(" ");
-    });
 
-    chrome.identity.getAuthToken(
-      {
-        interactive: true
-      },
-      function(token) {
-        gatoken = token;
-        if (chrome.runtime.lastError) {
-          alert(chrome.runtime.lastError.message);
-          return;
-        }
+          // request auth token
+          var authReq = new XMLHttpRequest();
+          authReq.open(
+            "GET",
+            "https://www.googleapis.com/analytics/v3/management/accounts/" +
+              account +
+              "/webproperties/" +
+              tracker +
+              "/customDimensions?alt=json&access_token=" +
+              token
+          );
+          // call back function once authenticated
+          authReq.onload = () => {
+            let list = {};
+            var indexes = [];
 
-        // request auth token
-        var x = new XMLHttpRequest();
-        x.open(
-          "GET",
-          "https://www.googleapis.com/analytics/v3/management/accounts/" +
-            account +
-            "/webproperties/" +
-            tracker +
-            "/customDimensions?alt=json&access_token=" +
-            token
-        );
-        // call back function once authenticated
-        x.onload = () => {
-          let list = {};
-          var indexes = [];
-
-          JSON.parse(x.response)["items"].forEach(item => {
-            list[item["index"]] = item["name"];
-            indexes.push(item["index"]);
-          });
-
-          // determine if there are any gaps
-          const max = Math.max(...keys.map(x => parseInt(x)));
-          let arr = keys
-            .concat(indexes)
-            .map(x => parseInt(x))
-            .filter((v, i, a) => a.indexOf(v) === i)
-            .sort((a, b) => {
-              return a - b;
+            JSON.parse(authReq.response)["items"].forEach(item => {
+              list[item["index"]] = item["name"];
+              indexes.push(item["index"]);
             });
 
-          for (var j = 0; j < max; j++) {
-            if (arr[j] !== j + 1) {
-              arr.splice(j, 0, j + 1);
-              list[j + 1] = "placeholder";
-            }
-          }
+            // determine if there are any gaps
+            const max = Math.max(...keys.map(x => parseInt(x)));
+            let arr = keys
+              .concat(indexes)
+              .map(x => parseInt(x))
+              .filter((v, i, a) => a.indexOf(v) === i)
+              .sort((a, b) => {
+                return a - b;
+              });
 
-          keys = keys.map(z => parseInt(z));
-          var cbFunc = () => {
-            if (indexes.filter(j => j == keys[0]).length > 0) {
-              // if updating
-              var k = new XMLHttpRequest();
-              k.open(
-                "PATCH",
-                `https://www.googleapis.com/analytics/v3/management/accounts/${account}/webproperties/${tracker}/customDimensions/ga:dimension${
-                  keys[0]
-                }?alt=json&access_token=${token}`
-              );
-            } else {
-              // if inserting
-              var k = new XMLHttpRequest();
-              k.open(
-                "POST",
-                "https://www.googleapis.com/analytics/v3/management/accounts/" +
-                  account +
-                  "/webproperties/" +
-                  tracker +
-                  "/customDimensions?alt=json&access_token=" +
-                  token
-              );
+            for (var j = 0; j < max; j++) {
+              if (arr[j] !== j + 1) {
+                arr.splice(j, 0, j + 1);
+                list[j + 1] = "placeholder";
+              }
             }
-            var body = {
-              name: json[keys[0]],
-              index: keys[0],
-              scope: "SESSION",
-              active: true
-            };
-            k.setRequestHeader(
-              "Content-Type",
-              "application/json;charset=UTF-8"
-            );
 
-            k.onload = () => {
-              if (keys.length > 1) {
-                keys = keys.slice(1);
-                wait(2000);
-                cbFunc();
+            keys = keys.map(z => parseInt(z));
+            var cbFunc = () => {
+              var dimReq = new XMLHttpRequest();
+              if (indexes.filter(j => j == keys[0]).length > 0) {
+                // if updating
+                dimReq.open(
+                  "PATCH",
+                  `https://www.googleapis.com/analytics/v3/management/accounts/${account}/webproperties/${tracker}/customDimensions/ga:dimension${
+                    keys[0]
+                  }?alt=json&access_token=${token}`
+                );
               } else {
-                alert("Done");
+                // if inserting
+                dimReq.open(
+                  "POST",
+                  "https://www.googleapis.com/analytics/v3/management/accounts/" +
+                    account +
+                    "/webproperties/" +
+                    tracker +
+                    "/customDimensions?alt=json&access_token=" +
+                    token
+                );
               }
-            };
-            k.onreadystatechange = function(oEvent) {
-              if (k.readyState === 4) {
-                if (k.status === 200) {
-                  console.log(k.responseText);
+
+              var body = {
+                name: json[keys[0]],
+                index: keys[0],
+                scope: "SESSION",
+                active: true
+              };
+
+              dimReq.setRequestHeader(
+                "Content-Type",
+                "application/json;charset=UTF-8"
+              );
+
+              // add call back function and wait two seconds to avoid api limits
+              dimReq.onload = () => {
+                if (keys.length > 1) {
+                  // remove first leading to base case
+                  keys = keys.slice(1);
+                  wait(2000);
+                  cbFunc();
                 } else {
-                  alert(JSON.parse(k.responseText)["error"]["message"]);
-                  // debugger;
-                  // alert("Error", k.statusText);
+                  // recursive call back base case
+                  alert("Done");
                 }
-              }
+              };
+              // error handling
+              dimReq.onreadystatechange = oEvent => {
+                if (dimReq.readyState === 4 && dimReq.status >= 400) {
+                  alert(JSON.parse(dimReq.responseText)["error"]["message"]);
+                }
+              };
+              dimReq.send(JSON.stringify(body));
             };
-            k.send(JSON.stringify(body));
+            cbFunc();
           };
-          cbFunc();
-        };
-        // send request
-        x.send();
-      }
-    );
+          authReq.send();
+        }
+      );
+    }
   };
 
   var logout = document.getElementById("logout");
-  logout.onclick = function(e) {
+  logout.onclick = e => {
     e.preventDefault();
     var options = {
       interactive: true,
       url: "https://localhost:44344/Account/Logout"
     };
-    chrome.identity.launchWebAuthFlow(options, function(redirectUri) {});
+    chrome.identity.launchWebAuthFlow(options, redirectUri => {});
 
     options = {
       interactive: true,
       url: "https://accounts.google.com/logout"
     };
-    chrome.identity.launchWebAuthFlow(options, function(redirectUri) {});
+    chrome.identity.launchWebAuthFlow(options, redirectUri => {});
   };
 });
+
 function wait(ms) {
   var start = new Date().getTime();
   var end = start;
