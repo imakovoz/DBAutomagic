@@ -95,17 +95,20 @@ document.addEventListener("DOMContentLoaded", event => {
           );
           // call back function once authenticated
           authReq.onload = () => {
-            let list = {};
-            var indexes = [];
+            if (JSON.parse(authReq.response)['error'] !== undefined) {
+              alert(JSON.parse(authReq.response)['error']['message'])
+            } else {
+              let list = {};
+              var indexes = [];
 
-            JSON.parse(authReq.response)["items"].forEach(item => {
-              list[item["index"]] = item["name"];
-              indexes.push(item["index"]);
-            });
+              JSON.parse(authReq.response)["items"].forEach(item => {
+                list[item["index"]] = item["name"];
+                indexes.push(item["index"]);
+              });
 
-            // determine if there are any gaps
-            const max = Math.max(...keys.map(x => parseInt(x)));
-            let arr = keys
+              // determine if there are any gaps
+              const max = Math.max(...keys.map(x => parseInt(x)));
+              let arr = keys
               .concat(indexes)
               .map(x => parseInt(x))
               .filter((v, i, a) => a.indexOf(v) === i)
@@ -113,70 +116,71 @@ document.addEventListener("DOMContentLoaded", event => {
                 return a - b;
               });
 
-            for (var j = 0; j < max; j++) {
-              if (arr[j] !== j + 1) {
-                arr.splice(j, 0, j + 1);
-                list[j + 1] = "placeholder";
+              for (var j = 0; j < max; j++) {
+                if (arr[j] !== j + 1) {
+                  arr.splice(j, 0, j + 1);
+                  list[j + 1] = "placeholder";
+                }
               }
-            }
 
-            keys = keys.map(z => parseInt(z));
-            var cbFunc = () => {
-              var dimReq = new XMLHttpRequest();
-              if (indexes.filter(j => j == keys[0]).length > 0) {
-                // if updating
-                dimReq.open(
-                  "PATCH",
-                  `https://www.googleapis.com/analytics/v3/management/accounts/${account}/webproperties/${tracker}/customDimensions/ga:dimension${
-                    keys[0]
-                  }?alt=json&access_token=${token}`
-                );
-              } else {
-                // if inserting
-                dimReq.open(
-                  "POST",
-                  "https://www.googleapis.com/analytics/v3/management/accounts/" +
+              keys = keys.map(z => parseInt(z));
+              var cbFunc = () => {
+                var dimReq = new XMLHttpRequest();
+                if (indexes.filter(j => j == keys[0]).length > 0) {
+                  // if updating
+                  dimReq.open(
+                    "PATCH",
+                    `https://www.googleapis.com/analytics/v3/management/accounts/${account}/webproperties/${tracker}/customDimensions/ga:dimension${
+                      keys[0]
+                    }?alt=json&access_token=${token}`
+                  );
+                } else {
+                  // if inserting
+                  dimReq.open(
+                    "POST",
+                    "https://www.googleapis.com/analytics/v3/management/accounts/" +
                     account +
                     "/webproperties/" +
                     tracker +
                     "/customDimensions?alt=json&access_token=" +
                     token
+                  );
+                }
+
+                var body = {
+                  name: json[keys[0]],
+                  index: keys[0],
+                  scope: "SESSION",
+                  active: true
+                };
+
+                dimReq.setRequestHeader(
+                  "Content-Type",
+                  "application/json;charset=UTF-8"
                 );
-              }
 
-              var body = {
-                name: json[keys[0]],
-                index: keys[0],
-                scope: "SESSION",
-                active: true
+                // add call back function and wait two seconds to avoid api limits
+                dimReq.onload = () => {
+                  if (keys.length > 1) {
+                    // remove first leading to base case
+                    keys = keys.slice(1);
+                    wait(2000);
+                    cbFunc();
+                  } else {
+                    // recursive call back base case
+                    alert("Done");
+                  }
+                };
+                // error handling
+                dimReq.onreadystatechange = oEvent => {
+                  if (dimReq.readyState === 4 && dimReq.status >= 400) {
+                    alert(JSON.parse(dimReq.responseText)["error"]["message"]);
+                  }
+                };
+                dimReq.send(JSON.stringify(body));
               };
-
-              dimReq.setRequestHeader(
-                "Content-Type",
-                "application/json;charset=UTF-8"
-              );
-
-              // add call back function and wait two seconds to avoid api limits
-              dimReq.onload = () => {
-                if (keys.length > 1) {
-                  // remove first leading to base case
-                  keys = keys.slice(1);
-                  wait(2000);
-                  cbFunc();
-                } else {
-                  // recursive call back base case
-                  alert("Done");
-                }
-              };
-              // error handling
-              dimReq.onreadystatechange = oEvent => {
-                if (dimReq.readyState === 4 && dimReq.status >= 400) {
-                  alert(JSON.parse(dimReq.responseText)["error"]["message"]);
-                }
-              };
-              dimReq.send(JSON.stringify(body));
-            };
-            cbFunc();
+              cbFunc();
+            }
           };
           authReq.send();
         }
