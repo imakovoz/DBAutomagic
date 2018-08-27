@@ -1,4 +1,37 @@
 document.addEventListener("DOMContentLoaded", event => {
+  var accountEl = document.querySelector("#account");
+  var trackerEl = document.querySelector("#tracker");
+  var jsonEl = document.querySelector("#json");
+  chrome.storage.local.get(["account"], function(result) {
+    if (result["account"] !== undefined || result !== {}) {
+      accountEl.value = result["account"];
+    }
+  });
+  chrome.storage.local.get(["tracker"], function(result) {
+    if (result["tracker"] !== undefined) {
+      trackerEl.value = result["tracker"];
+    }
+  });
+  chrome.storage.local.get(["json"], function(result) {
+    if (result["json"] !== undefined) {
+      jsonEl.value = result["json"];
+    }
+  });
+  accountEl.addEventListener("change", e => {
+    chrome.storage.local.set({ account: e.currentTarget.value }, function() {
+      // console.log("Account Value is set");
+    });
+  });
+  trackerEl.addEventListener("change", e => {
+    chrome.storage.local.set({ tracker: e.currentTarget.value }, function() {
+      // console.log("Tracker Value is set");
+    });
+  });
+  jsonEl.addEventListener("change", e => {
+    chrome.storage.local.set({ json: e.currentTarget.value }, function() {
+      // console.log("JSON Value is set");
+    });
+  });
   var submit = document.getElementById("submit");
   submit.onclick = e => {
     e.preventDefault();
@@ -150,22 +183,22 @@ document.addEventListener("DOMContentLoaded", event => {
       );
     }
   };
-
-  var logout = document.getElementById("logout");
-  logout.onclick = e => {
-    e.preventDefault();
-    var options = {
-      interactive: true,
-      url: "https://localhost:44344/Account/Logout"
-    };
-    chrome.identity.launchWebAuthFlow(options, redirectUri => {});
-
-    options = {
-      interactive: true,
-      url: "https://accounts.google.com/logout"
-    };
-    chrome.identity.launchWebAuthFlow(options, redirectUri => {});
-  };
+  // this code displays logout screen but doesn't actually log user out, debugging needed
+  // var logout = document.getElementById("logout");
+  // logout.onclick = e => {
+  //   e.preventDefault();
+  //   var options = {
+  //     interactive: true,
+  //     url: "https://localhost:44344/Account/Logout"
+  //   };
+  //   chrome.identity.launchWebAuthFlow(options, redirectUri => {});
+  //
+  //   options = {
+  //     interactive: true,
+  //     url: "https://accounts.google.com/logout"
+  //   };
+  //   chrome.identity.launchWebAuthFlow(options, redirectUri => {});
+  // };
 });
 
 function wait(ms) {

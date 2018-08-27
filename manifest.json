@@ -1,14 +1,8 @@
 {
   "key":
-<<<<<<< HEAD
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAw+qiFxGWBv96hoKCo3x9PgueSissiTZpZ6el3rYSFgCbuwWQchCqz8hN66uVyeLPa8/n9u1qZg8CESLvtxOSzHlm3iSNIHP5KwgyQMMMvtW6iAfwxNJJbkvhocMJbn0tY0qIkV8hEICZwkRwjd/Ky8BXte41tlPl2DvFmDYY7MOE6mFcyyikOlXT8suTMLX/oL99V+Q3C36nWqmar3/6ilkGGaLZpYl19JuwBIUqEgLnRSSiQwuRLD7svMPo8SEJNmxRq9IUbQCuJAExW6ZARGKh+yapgApP9s4kC7XFNqH6inxifbujlXAl7aYyInkfXujFkkgoRp8tdyxiPDpWowIDAQAB",
   "name": "DBAutomagic",
-  "version": "2.0",
-=======
-    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAypDeDGD3sQOZQi/Agrs8FWi53pEmcjJAImEoTTtlF5K2GAhk4vqUoRnf1BDY0zltqOv0dHtR47dHgbSfxuh/38+YfsQ/VzdtruWGXdc8Wa+XEYZVljP05dlECLzjFxAluevsdc52LFtpd1Qvvwm3Xp2HtED/gCPvktbSYJDuX94Jt6xzpKiM3cQXFQ/KxLmzw6VNSieehUKOdpXTyROdSLu14jBu/IYIHlkNzq3U43C71ILca2DFoM2eI4/ImJAWfppRKfTzWBMsJkKriFtH0HB2v3RSRXfXcqcv9bpho6ogl94mkGjfw7E/7w2WcIvMyACqsyXGiTE9tmYMnZAGUwIDAQAB",
-  "name": "DBAutomagic",
   "version": "2.1",
->>>>>>> 9707129ab4805a22597eb1eb9bad77a5aba44e2c
   "manifest_version": 2,
   "background": {
     "scripts": ["background.js"]
