@@ -39,8 +39,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
   var submit = document.getElementById("submit");
   submit.onclick = function(e) {
     e.preventDefault();
-    // var account = "124154600";
-    // var tracker = "UA-124154600-4";
     var account = document.querySelector("#account").value;
     var tracker = document.querySelector("#tracker").value;
     var json = document.querySelector("#json").value;
@@ -53,41 +51,23 @@ document.addEventListener("DOMContentLoaded", function(event) {
     }
     if (json === "") {
       json = {
-        "1": "Ydemandbase_sid",
-        "2": "Ycompany_name",
-        "3": "Yindustry",
-        "4": "Ysub_industry",
-        "5": "Yemployee_range",
-        "6": "Yrevenue_range",
-        "7": "Yaudience",
-        "8": "Yaudience_segment",
-        "9": "Ymarketing_alias",
-        "10": "Ycity",
-        "11": "Ystate",
-        "12": "Ycountry_name",
-        "13": "Ywatch_list_account_type",
-        "14": "Ywatch_list_account_status",
-        "15": "Ywatch_list_campaign_code",
-        "16": "Ywatch_list_account_owner"
+        "1": "demandbase_sid",
+        "2": "company_name",
+        "3": "industry",
+        "4": "sub_industry",
+        "5": "employee_range",
+        "6": "revenue_range",
+        "7": "audience",
+        "8": "audience_segment",
+        "9": "marketing_alias",
+        "10": "city",
+        "11": "state",
+        "12": "country_name",
+        "13": "watch_list_account_type",
+        "14": "watch_list_account_status",
+        "15": "watch_list_campaign_code",
+        "16": "watch_list_account_owner"
       };
-      // json = {
-      //   "1": "demandbase_sid",
-      //   "2": "company_name",
-      //   "3": "industry",
-      //   "4": "sub_industry",
-      //   "5": "employee_range",
-      //   "6": "revenue_range",
-      //   "7": "audience",
-      //   "8": "audience_segment",
-      //   "9": "marketing_alias",
-      //   "10": "city",
-      //   "11": "state",
-      //   "12": "country_name",
-      //   "13": "watch_list_account_type",
-      //   "14": "watch_list_account_status",
-      //   "15": "watch_list_campaign_code",
-      //   "16": "watch_list_account_owner",
-      // };
     } else {
       json = JSON.parse(json);
     }
@@ -109,12 +89,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
         })
         .join(" ");
     });
-
+    alert("submitted1");
     chrome.identity.getAuthToken(
       {
         interactive: true
       },
       function(token) {
+        alert(`token: ${token}`);
+        console.log(token);
         gatoken = token;
         if (chrome.runtime.lastError) {
           alert(chrome.runtime.lastError.message);

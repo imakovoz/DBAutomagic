@@ -1,8 +1,8 @@
 {
   "key":
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAypDeDGD3sQOZQi/Agrs8FWi53pEmcjJAImEoTTtlF5K2GAhk4vqUoRnf1BDY0zltqOv0dHtR47dHgbSfxuh/38+YfsQ/VzdtruWGXdc8Wa+XEYZVljP05dlECLzjFxAluevsdc52LFtpd1Qvvwm3Xp2HtED/gCPvktbSYJDuX94Jt6xzpKiM3cQXFQ/KxLmzw6VNSieehUKOdpXTyROdSLu14jBu/IYIHlkNzq3U43C71ILca2DFoM2eI4/ImJAWfppRKfTzWBMsJkKriFtH0HB2v3RSRXfXcqcv9bpho6ogl94mkGjfw7E/7w2WcIvMyACqsyXGiTE9tmYMnZAGUwIDAQAB",
-  "name": "Identity test",
-  "version": "1",
+  "name": "DBAutomagic",
+  "version": "2.1",
   "manifest_version": 2,
   "background": {
     "scripts": ["background.js"]
