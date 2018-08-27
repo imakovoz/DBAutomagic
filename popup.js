@@ -1,6 +1,41 @@
 var gatoken = null;
 
 document.addEventListener("DOMContentLoaded", function(event) {
+  var accountEl = document.querySelector("#account");
+  var trackerEl = document.querySelector("#tracker");
+  var jsonEl = document.querySelector("#json");
+  chrome.storage.sync.get(["account"], function(result) {
+    console.log(result["json"]);
+    if (result["account"] !== undefined || result !== {}) {
+      accountEl.value = result["account"];
+    }
+  });
+  chrome.storage.sync.get(["tracker"], function(result) {
+    if (result["tracker"] !== undefined) {
+      trackerEl.value = result["tracker"];
+    }
+  });
+  chrome.storage.sync.get(["json"], function(result) {
+    if (result["json"] !== undefined) {
+      jsonEl.value = result["json"];
+    }
+  });
+  accountEl.addEventListener("change", e => {
+    chrome.storage.sync.set({ account: e.currentTarget.value }, function() {
+      console.log("Account Value is set to " + value);
+    });
+  });
+  trackerEl.addEventListener("change", e => {
+    chrome.storage.sync.set({ tracker: e.currentTarget.value }, function() {
+      console.log("Tracker Value is set to " + value);
+    });
+  });
+  jsonEl.addEventListener("change", e => {
+    chrome.storage.sync.set({ json: e.currentTarget.value }, function() {
+      console.log("JSON Value is set to " + value);
+    });
+  });
+
   var submit = document.getElementById("submit");
   submit.onclick = function(e) {
     e.preventDefault();
