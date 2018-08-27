@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", event => {
   var trackerEl = document.querySelector("#tracker");
   var jsonEl = document.querySelector("#json");
   chrome.storage.local.get(["account"], function(result) {
-    if (result["account"] !== undefined || result !== {}) {
+    if (result["account"] !== undefined) {
       accountEl.value = result["account"];
     }
   });
