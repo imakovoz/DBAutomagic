@@ -2,11 +2,7 @@ document.addEventListener("DOMContentLoaded", event => {
   var accountEl = document.querySelector("#account");
   var trackerEl = document.querySelector("#tracker");
   var jsonEl = document.querySelector("#json");
-  chrome.storage.local.get(["account"], function(result) {
-    if (result["account"] !== undefined) {
-      accountEl.value = result["account"];
-    }
-  });
+
   chrome.storage.local.get(["tracker"], function(result) {
     if (result["tracker"] !== undefined) {
       trackerEl.value = result["tracker"];
@@ -17,11 +13,7 @@ document.addEventListener("DOMContentLoaded", event => {
       jsonEl.value = result["json"];
     }
   });
-  accountEl.addEventListener("change", e => {
-    chrome.storage.local.set({ account: e.currentTarget.value }, function() {
-      // console.log("Account Value is set");
-    });
-  });
+
   trackerEl.addEventListener("change", e => {
     chrome.storage.local.set({ tracker: e.currentTarget.value }, function() {
       // console.log("Tracker Value is set");
@@ -35,8 +27,8 @@ document.addEventListener("DOMContentLoaded", event => {
   var submit = document.getElementById("submit");
   submit.onclick = e => {
     e.preventDefault();
-    var account = document.querySelector("#account").value;
     var tracker = document.querySelector("#tracker").value;
+    var account = tracker.split("-")[1];
     var json = document.querySelector("#json").value;
     var errorArr = [];
     if (account === "") {
@@ -50,6 +42,7 @@ document.addEventListener("DOMContentLoaded", event => {
     } else {
       json = JSON.parse(json);
     }
+    alert(`account: ${account} * tracker: ${tracker} * json: ${json}`);
     if (errorArr.length > 0) {
       alert(errorArr.join("\n"));
     } else {
@@ -95,8 +88,8 @@ document.addEventListener("DOMContentLoaded", event => {
           );
           // call back function once authenticated
           authReq.onload = () => {
-            if (JSON.parse(authReq.response)['error'] !== undefined) {
-              alert(JSON.parse(authReq.response)['error']['message'])
+            if (JSON.parse(authReq.response)["error"] !== undefined) {
+              alert(JSON.parse(authReq.response)["error"]["message"]);
             } else {
               let list = {};
               var indexes = [];
@@ -109,12 +102,12 @@ document.addEventListener("DOMContentLoaded", event => {
               // determine if there are any gaps
               const max = Math.max(...keys.map(x => parseInt(x)));
               let arr = keys
-              .concat(indexes)
-              .map(x => parseInt(x))
-              .filter((v, i, a) => a.indexOf(v) === i)
-              .sort((a, b) => {
-                return a - b;
-              });
+                .concat(indexes)
+                .map(x => parseInt(x))
+                .filter((v, i, a) => a.indexOf(v) === i)
+                .sort((a, b) => {
+                  return a - b;
+                });
 
               for (var j = 0; j < max; j++) {
                 if (arr[j] !== j + 1) {
@@ -139,11 +132,11 @@ document.addEventListener("DOMContentLoaded", event => {
                   dimReq.open(
                     "POST",
                     "https://www.googleapis.com/analytics/v3/management/accounts/" +
-                    account +
-                    "/webproperties/" +
-                    tracker +
-                    "/customDimensions?alt=json&access_token=" +
-                    token
+                      account +
+                      "/webproperties/" +
+                      tracker +
+                      "/customDimensions?alt=json&access_token=" +
+                      token
                   );
                 }
 
