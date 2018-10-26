@@ -21,6 +21,20 @@
       align-items: center;
       margin: 0 5px;
     }
+    select {
+      width: 100%;
+
+    }
+    .containerDiv {
+      padding: 0;
+    }
+    .selectContainer {
+      width: 33%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 5px;
+    }
     </style>
 
   </head>
@@ -28,9 +42,33 @@
     <form>
       <input type="text" id="tracker" placeholder="tracker">
       <textarea id="json" rows="8" cols="80" placeholder="Enter JSON here"></textarea>
-      <div>
+      <div class="containerDiv">
+        <div class="selectContainer">
+          <h3>Scope</h3>
+          <select id="scope">
+            <option value="session">Session</option>
+            <option value="hit">Hit</option>
+            <option value="user">User</option>
+            <option value="product">Product</option>
+          </select>
+        </div>
+        <div class="selectContainer">
+          <h3>Type</h3>
+          <select id="type">
+            <option value="dimensions">Dimensions</option>
+            <option value="metrics">Metrics</option>
+          </select>
+        </div>
+        <div class="selectContainer">
+          <h3>Active?</h3>
+          <select id="active">
+            <option value="true">True</option>
+            <option value="false">False</option>
+          </select>
+        </div>
+      </div>
+      <div class="containerDiv">
         <button id="submit">Submit</button>
-        <!-- <button id="logout">Logout</button> -->
       </div>
     </form>
     <script src="popup.js"></script>

@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", event => {
   var accountEl = document.querySelector("#account");
   var trackerEl = document.querySelector("#tracker");
   var jsonEl = document.querySelector("#json");
+  var type = document.getElementById("type");
 
   chrome.storage.local.get(["tracker"], function(result) {
     if (result["tracker"] !== undefined) {
@@ -27,6 +28,17 @@ document.addEventListener("DOMContentLoaded", event => {
   var submit = document.getElementById("submit");
   submit.onclick = e => {
     e.preventDefault();
+    var scope = document.getElementById("scope");
+    scope = scope.options[scope.selectedIndex].value.toUpperCase();
+    type = type.options[type.selectedIndex].value;
+    var active = document.getElementById("active");
+    active = active.options[active.selectedIndex].value;
+    if (active === "true") {
+      active = true;
+    } else {
+      active = false;
+    }
+
     var tracker = document.querySelector("#tracker").value;
     var account = tracker.split("-")[1];
     var json = document.querySelector("#json").value;
@@ -42,7 +54,7 @@ document.addEventListener("DOMContentLoaded", event => {
     } else {
       json = JSON.parse(json);
     }
-    alert(`account: ${account} * tracker: ${tracker} * json: ${json}`);
+
     if (errorArr.length > 0) {
       alert(errorArr.join("\n"));
     } else {
@@ -77,15 +89,27 @@ document.addEventListener("DOMContentLoaded", event => {
 
           // request auth token
           var authReq = new XMLHttpRequest();
-          authReq.open(
-            "GET",
-            "https://www.googleapis.com/analytics/v3/management/accounts/" +
-              account +
-              "/webproperties/" +
-              tracker +
-              "/customDimensions?alt=json&access_token=" +
-              token
-          );
+          if (type === "dimensions") {
+            authReq.open(
+              "GET",
+              "https://www.googleapis.com/analytics/v3/management/accounts/" +
+                account +
+                "/webproperties/" +
+                tracker +
+                "/customDimensions?alt=json&access_token=" +
+                token
+            );
+          } else {
+            authReq.open(
+              "GET",
+              "https://www.googleapis.com/analytics/v3/management/accounts/" +
+                account +
+                "/webproperties/" +
+                tracker +
+                "/customMetrics?alt=json&access_token=" +
+                token
+            );
+          }
           // call back function once authenticated
           authReq.onload = () => {
             if (JSON.parse(authReq.response)["error"] !== undefined) {
@@ -93,7 +117,8 @@ document.addEventListener("DOMContentLoaded", event => {
             } else {
               let list = {};
               var indexes = [];
-
+              // confirm(JSON.parse(authReq.response)["username"]);
+              alert(scope);
               JSON.parse(authReq.response)["items"].forEach(item => {
                 list[item["index"]] = item["name"];
                 indexes.push(item["index"]);
@@ -118,34 +143,78 @@ document.addEventListener("DOMContentLoaded", event => {
 
               keys = keys.map(z => parseInt(z));
               var cbFunc = () => {
+                var body = null;
                 var dimReq = new XMLHttpRequest();
-                if (indexes.filter(j => j == keys[0]).length > 0) {
-                  // if updating
-                  dimReq.open(
-                    "PATCH",
-                    `https://www.googleapis.com/analytics/v3/management/accounts/${account}/webproperties/${tracker}/customDimensions/ga:dimension${
-                      keys[0]
-                    }?alt=json&access_token=${token}`
-                  );
+                if (type === "dimensions") {
+                  if (indexes.filter(j => j == keys[0]).length > 0) {
+                    // if updating
+                    dimReq.open(
+                      "PATCH",
+                      `https://www.googleapis.com/analytics/v3/management/accounts/${account}/webproperties/${tracker}/customDimensions/ga:dimension${
+                        keys[0]
+                      }?alt=json&access_token=${token}`
+                    );
+                  } else {
+                    // if inserting
+                    dimReq.open(
+                      "POST",
+                      "https://www.googleapis.com/analytics/v3/management/accounts/" +
+                        account +
+                        "/webproperties/" +
+                        tracker +
+                        "/customDimensions?alt=json&access_token=" +
+                        token
+                    );
+                  }
+                  body = {
+                    name: json[keys[0]],
+                    index: keys[0],
+                    scope: scope,
+                    active: active
+                  };
                 } else {
-                  // if inserting
-                  dimReq.open(
-                    "POST",
-                    "https://www.googleapis.com/analytics/v3/management/accounts/" +
-                      account +
-                      "/webproperties/" +
-                      tracker +
-                      "/customDimensions?alt=json&access_token=" +
-                      token
-                  );
-                }
+                  if (indexes.filter(j => j == keys[0]).length > 0) {
+                    // if updating
+                    dimReq.open(
+                      "PATCH",
+                      `https://www.googleapis.com/analytics/v3/management/accounts/${account}/webproperties/${tracker}/customMetrics/ga:metric${
+                        keys[0]
+                      }?alt=json&access_token=${token}`
+                    );
+                  } else {
+                    console.log("test post");
+                    // if inserting
+                    dimReq.open(
+                      "POST",
+                      "https://www.googleapis.com/analytics/v3/management/accounts/" +
+                        account +
+                        "/webproperties/" +
+                        tracker +
+                        "/customMetrics?alt=json&access_token=" +
+                        token
+                    );
+                  }
+                  var njson = JSON.parse(json[keys[0]].replaceAll("'", '"'));
+                  body = {
+                    active: active
+                  };
 
-                var body = {
-                  name: json[keys[0]],
-                  index: keys[0],
-                  scope: "SESSION",
-                  active: true
-                };
+                  try {
+                    body.name = njson["name"];
+                  } catch {}
+                  try {
+                    body.min_value = njson["min"];
+                  } catch {}
+                  try {
+                    body.max_value = njson["max"];
+                  } catch {}
+                  try {
+                    body.type = njson["type"].toUpperCase();
+                  } catch {}
+                  try {
+                    body.scope = njson["scope"];
+                  } catch {}
+                }
 
                 dimReq.setRequestHeader(
                   "Content-Type",
@@ -170,6 +239,7 @@ document.addEventListener("DOMContentLoaded", event => {
                     alert(JSON.parse(dimReq.responseText)["error"]["message"]);
                   }
                 };
+                console.log(body);
                 dimReq.send(JSON.stringify(body));
               };
               cbFunc();
@@ -205,3 +275,8 @@ function wait(ms) {
     end = new Date().getTime();
   }
 }
+
+String.prototype.replaceAll = function(search, replacement) {
+  var target = this;
+  return target.replace(new RegExp(search, "g"), replacement);
+};
