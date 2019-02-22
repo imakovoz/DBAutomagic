@@ -25,6 +25,108 @@ document.addEventListener("DOMContentLoaded", event => {
       // console.log("JSON Value is set");
     });
   });
+
+  var pullDims = document.getElementById("pullDims");
+  pullDims.onclick = e => {
+    e.preventDefault();
+
+    var tracker = document.querySelector("#tracker").value;
+    var account = tracker.split("-")[1];
+    var errorArr = [];
+    if (account === "") {
+      errorArr.push("Account field is empty");
+    }
+    if (tracker === "") {
+      errorArr.push("Tracker field is empty");
+    }
+
+    if (errorArr.length > 0) {
+      alert(errorArr.join("\n"));
+    } else {
+      var keys = Object.keys(json);
+      // sanitize inputs
+      keys.forEach(key => {
+        json[key] = json[key]
+          .split("_")
+          .map(wrd => {
+            if (wrd === "sid") {
+              return "SID";
+            } else if (wrd === "sic") {
+              return "SIC";
+            } else if (wrd === "naics") {
+              return "NAICS";
+            } else {
+              return wrd.charAt(0).toUpperCase() + wrd.slice(1);
+            }
+          })
+          .join(" ");
+      });
+
+      chrome.identity.getAuthToken(
+        {
+          interactive: true
+        },
+        token => {
+          if (chrome.runtime.lastError) {
+            alert(chrome.runtime.lastError.message);
+            return;
+          }
+
+          var accountReq = new XMLHttpRequest();
+          var accountName = "";
+          accountReq.open(
+            "GET",
+            "https://www.googleapis.com/analytics/v3/management/accounts/" +
+              account +
+              "/webproperties/" +
+              tracker +
+              "?alt=json&access_token=" +
+              token
+          );
+          accountReq.onload = () => {
+            if (JSON.parse(accountReq.response)["error"] !== undefined) {
+              alert(JSON.parse(accountReq.response)["error"]["message"]);
+            } else {
+              accountName = JSON.parse(accountReq.response)["name"];
+            }
+          };
+          accountReq.send();
+
+          // request auth token
+          var authReq = new XMLHttpRequest();
+          authReq.open(
+            "GET",
+            "https://www.googleapis.com/analytics/v3/management/accounts/" +
+              account +
+              "/webproperties/" +
+              tracker +
+              "/customDimensions?alt=json&access_token=" +
+              token
+          );
+          // call back function once authenticated
+          authReq.onload = () => {
+            if (JSON.parse(authReq.response)["error"] !== undefined) {
+              alert(JSON.parse(authReq.response)["error"]["message"]);
+            } else {
+              let list = {};
+              var indexes = [];
+              // confirm(JSON.parse(authReq.response)["username"]);
+
+              var availableDims = `Property Name: ${accountName}`;
+              JSON.stringify(
+                JSON.parse(authReq.response)["items"].forEach(entry => {
+                  availableDims += `\n${entry.index} : ${entry.name}`;
+                })
+              );
+              alert(availableDims);
+            }
+          };
+          authReq.send();
+        }
+      );
+    }
+  };
+
   var submit = document.getElementById("submit");
   submit.onclick = e => {
     e.preventDefault();
@@ -118,7 +220,14 @@ document.addEventListener("DOMContentLoaded", event => {
               let list = {};
               var indexes = [];
               // confirm(JSON.parse(authReq.response)["username"]);
-              alert(scope);
+
+              var availableDims = "";
+              JSON.stringify(
+                JSON.parse(authReq.response)["items"].forEach(entry => {
+                  availableDims += `\n${entry.index} : ${entry.name}`;
+                })
+              );
+              alert(availableDims);
               JSON.parse(authReq.response)["items"].forEach(item => {
                 list[item["index"]] = item["name"];
                 indexes.push(item["index"]);
@@ -182,7 +291,6 @@ document.addEventListener("DOMContentLoaded", event => {
                       }?alt=json&access_token=${token}`
                     );
                   } else {
-                    console.log("test post");
                     // if inserting
                     dimReq.open(
                       "POST",
@@ -239,7 +347,6 @@ document.addEventListener("DOMContentLoaded", event => {
                     alert(JSON.parse(dimReq.responseText)["error"]["message"]);
                   }
                 };
-                console.log(body);
                 dimReq.send(JSON.stringify(body));
               };
               cbFunc();
