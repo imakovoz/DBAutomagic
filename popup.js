@@ -217,6 +217,7 @@ document.addEventListener("DOMContentLoaded", event => {
             if (JSON.parse(authReq.response)["error"] !== undefined) {
               alert(JSON.parse(authReq.response)["error"]["message"]);
             } else {
+              let confirmVar = false;
               let list = {};
               var indexes = [];
               // confirm(JSON.parse(authReq.response)["username"]);
@@ -227,7 +228,6 @@ document.addEventListener("DOMContentLoaded", event => {
                   availableDims += `\n${entry.index} : ${entry.name}`;
                 })
               );
-              alert(availableDims);
               JSON.parse(authReq.response)["items"].forEach(item => {
                 list[item["index"]] = item["name"];
                 indexes.push(item["index"]);
@@ -256,6 +256,15 @@ document.addEventListener("DOMContentLoaded", event => {
                 var dimReq = new XMLHttpRequest();
                 if (type === "dimensions") {
                   if (indexes.filter(j => j == keys[0]).length > 0) {
+                    if (confirmVar === false) {
+                      confirmVar = confirm(
+                        "You are about to overwrite a dimension, would you like to continue?"
+                      );
+
+                      if (!confirmVar) {
+                        die("This script has stopped running");
+                      }
+                    }
                     // if updating
                     dimReq.open(
                       "PATCH",
@@ -357,22 +366,6 @@ document.addEventListener("DOMContentLoaded", event => {
       );
     }
   };
-  // this code displays logout screen but doesn't actually log user out, debugging needed
-  // var logout = document.getElementById("logout");
-  // logout.onclick = e => {
-  //   e.preventDefault();
-  //   var options = {
-  //     interactive: true,
-  //     url: "https://localhost:44344/Account/Logout"
-  //   };
-  //   chrome.identity.launchWebAuthFlow(options, redirectUri => {});
-  //
-  //   options = {
-  //     interactive: true,
-  //     url: "https://accounts.google.com/logout"
-  //   };
-  //   chrome.identity.launchWebAuthFlow(options, redirectUri => {});
-  // };
 });
 
 function wait(ms) {
